@@ -1041,7 +1041,6 @@ FCFuncStart(gTypeNameBuilder)
     QCFuncElement("Clear", TypeNameBuilder::_Clear)
 FCFuncEnd()
 
-#ifndef FEATURE_CORECLR
 FCFuncStart(gSafeTypeNameParserHandle)
     QCFuncElement("_ReleaseTypeNameParser", TypeName::QReleaseTypeNameParser)
 FCFuncEnd()
@@ -1053,7 +1052,6 @@ FCFuncStart(gTypeNameParser)
     QCFuncElement("_GetModifiers",          TypeName::QGetModifiers)
     QCFuncElement("_GetAssemblyName",       TypeName::QGetAssemblyName)
 FCFuncEnd()
-#endif //!FEATURE_CORECLR
 
 #ifdef FEATURE_CAS_POLICY
 FCFuncStart(gPEFileFuncs)
