@@ -72,14 +72,14 @@ jobs:
 
 
 
-#
-# Debug build
-#
+# #
+# # Debug build
+# #
 
-- template: eng/platform-matrix.yml
-  parameters:
-    jobTemplate: build-job.yml
-    buildConfig: debug
+# - template: eng/platform-matrix.yml
+#   parameters:
+#     jobTemplate: build-job.yml
+#     buildConfig: debug
 
 #
 # Checked build
@@ -90,14 +90,14 @@ jobs:
     jobTemplate: build-job.yml
     buildConfig: checked
 
-#
-# Release build
-#
+# #
+# # Release build
+# #
 
-- template: eng/platform-matrix.yml
-  parameters:
-    jobTemplate: build-job.yml
-    buildConfig: release
+# - template: eng/platform-matrix.yml
+#   parameters:
+#     jobTemplate: build-job.yml
+#     buildConfig: release
 
 #
 # Checked test builds
@@ -120,36 +120,36 @@ jobs:
       priority: 1
       scenarios: 'normal;jitstress2'
 
-# Pri1 crossgen
-- template: eng/platform-matrix.yml
-  parameters:
-    jobTemplate: test-job.yml
-    buildConfig: checked
-    jobParameters:
-      priority: 1
-      crossgen: true
-      scenarios: 'normal;jitstress2'
+# # Pri1 crossgen
+# - template: eng/platform-matrix.yml
+#   parameters:
+#     jobTemplate: test-job.yml
+#     buildConfig: checked
+#     jobParameters:
+#       priority: 1
+#       crossgen: true
+#       scenarios: 'normal;jitstress2'
 
-#
-# Release test builds
-#
+# #
+# # Release test builds
+# #
 
-# Pri1
-- template: eng/platform-matrix.yml
-  parameters:
-    jobTemplate: test-job.yml
-    buildConfig: release
-    jobParameters:
-      priority: 1
+# # Pri1
+# - template: eng/platform-matrix.yml
+#   parameters:
+#     jobTemplate: test-job.yml
+#     buildConfig: release
+#     jobParameters:
+#       priority: 1
 
-# Pri1 crossgen
-- template: eng/platform-matrix.yml
-  parameters:
-    jobTemplate: test-job.yml
-    buildConfig: release
-    jobParameters:
-      priority: 1
-      crossgen: true
+# # Pri1 crossgen
+# - template: eng/platform-matrix.yml
+#   parameters:
+#     jobTemplate: test-job.yml
+#     buildConfig: release
+#     jobParameters:
+#       priority: 1
+#       crossgen: true
 
 
 # Publish build information to Build Assets Registry
