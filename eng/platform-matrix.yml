@@ -5,23 +5,23 @@ parameters:
 
 jobs:
 
-# Linux x64
+# # Linux x64
 
-- template: ${{ parameters.jobTemplate }}
-  parameters:
-    buildConfig: ${{ parameters.buildConfig }}
-    archType: x64
-    osGroup: Linux
-    ${{ insert }}: ${{ parameters.jobParameters }}
+# - template: ${{ parameters.jobTemplate }}
+#   parameters:
+#     buildConfig: ${{ parameters.buildConfig }}
+#     archType: x64
+#     osGroup: Linux
+#     ${{ insert }}: ${{ parameters.jobParameters }}
 
-# macOS x64
+# # macOS x64
 
-- template: ${{ parameters.jobTemplate }}
-  parameters:
-    buildConfig: ${{ parameters.buildConfig }}
-    archType: x64
-    osGroup: OSX
-    ${{ insert }}: ${{ parameters.jobParameters }}
+# - template: ${{ parameters.jobTemplate }}
+#   parameters:
+#     buildConfig: ${{ parameters.buildConfig }}
+#     archType: x64
+#     osGroup: OSX
+#     ${{ insert }}: ${{ parameters.jobParameters }}
 
 # Windows x64/x86/arm/arm64
 
@@ -32,26 +32,26 @@ jobs:
     osGroup: Windows_NT
     ${{ insert }}: ${{ parameters.jobParameters }}
 
-- template: ${{ parameters.jobTemplate }}
-  parameters:
-    buildConfig: ${{ parameters.buildConfig }}
-    archType: x86
-    osGroup: Windows_NT
-    ${{ insert }}: ${{ parameters.jobParameters }}
+# - template: ${{ parameters.jobTemplate }}
+#   parameters:
+#     buildConfig: ${{ parameters.buildConfig }}
+#     archType: x86
+#     osGroup: Windows_NT
+#     ${{ insert }}: ${{ parameters.jobParameters }}
 
-- template: ${{ parameters.jobTemplate }}
-  parameters:
-    buildConfig: ${{ parameters.buildConfig }}
-    archType: arm
-    osGroup: Windows_NT
-    ${{ insert }}: ${{ parameters.jobParameters }}
+# - template: ${{ parameters.jobTemplate }}
+#   parameters:
+#     buildConfig: ${{ parameters.buildConfig }}
+#     archType: arm
+#     osGroup: Windows_NT
+#     ${{ insert }}: ${{ parameters.jobParameters }}
 
-- template: ${{ parameters.jobTemplate }}
-  parameters:
-    buildConfig: ${{ parameters.buildConfig }}
-    archType: arm64
-    osGroup: Windows_NT
-    ${{ insert }}: ${{ parameters.jobParameters }}
+# - template: ${{ parameters.jobTemplate }}
+#   parameters:
+#     buildConfig: ${{ parameters.buildConfig }}
+#     archType: arm64
+#     osGroup: Windows_NT
+#     ${{ insert }}: ${{ parameters.jobParameters }}
 
 # TODO for official build:
 # RedHat x64
