@@ -69,14 +69,14 @@ jobs:
 #     jobTemplate: build-job.yml
 #     buildConfig: debug
 
-# #
-# # Checked build
-# #
+#
+# Checked build
+#
 
-# - template: eng/platform-matrix.yml
-#   parameters:
-#     jobTemplate: build-job.yml
-#     buildConfig: checked
+- template: eng/platform-matrix.yml
+  parameters:
+    jobTemplate: build-job.yml
+    buildConfig: checked
 
 # #
 # # Release build
@@ -91,13 +91,13 @@ jobs:
 # # Checked test builds
 # #
 
-# # Pri0
-# - template: eng/platform-matrix.yml
-#   parameters:
-#     jobTemplate: testbuild-job.yml
-#     buildConfig: checked
-#     jobParameters:
-#       priority: 0
+# Pri0
+- template: eng/platform-matrix.yml
+  parameters:
+    jobTemplate: testbuild-job.yml
+    buildConfig: checked
+    jobParameters:
+      priority: 0
 
 # # Pri1
 # - template: eng/platform-matrix.yml
@@ -108,13 +108,13 @@ jobs:
 #       priority: 1
 #       scenarios: 'normal;jitstress2'
 
-# Pri1
+# Jit Stress
 - template: eng/platform-matrix.yml
   parameters:
     jobTemplate: test-job.yml
     buildConfig: checked
     jobParameters:
-      priority: 1
+      priority: 0
       scenarios: 'normal;jitstress1;jitstress2'
       name: 'jitstress_scenarios'
       displayName: 'Jit Stress Scenarios'
