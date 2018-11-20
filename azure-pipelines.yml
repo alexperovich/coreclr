@@ -87,9 +87,9 @@ jobs:
 #     jobTemplate: build-job.yml
 #     buildConfig: release
 
-# #
-# # Checked test builds
-# #
+#
+# Checked test builds
+#
 
 # Pri0
 - template: eng/platform-matrix.yml

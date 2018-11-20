@@ -55,6 +55,14 @@ jobs:
 
     steps:
 
+    # Initialize tools
+    - ${{ if or(eq(parameters.osGroup, 'Linux'), eq(parameters.osGroup, 'OSX')) }}:
+      - script: ./init-tools.sh
+        displayName: Initialize tools
+    - ${{ if eq(parameters.osGroup, 'Windows_NT') }}:
+      - script: init-tools.cmd
+        displayName: Initialize tools
+
     # Download test build from pipeline artifact storage
     - ${{ if or(eq(parameters.osGroup, 'Linux'), eq(parameters.osGroup, 'OSX')) }}:
       - task: DownloadPipelineArtifact@0
