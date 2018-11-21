@@ -114,9 +114,20 @@ jobs:
     buildConfig: checked
     jobParameters:
       priority: 0
-      scenarios: 'normal;jitstress1;jitstress2'
+      scenarios: 'jitstress1;jitstress2;jitstress1_tiered;jitstress2_tiered;jitstressregs1;jitstressregs2;jitstressregs3;jitstressregs4;jitstressregs8;jitstressregs0x10;jitstressregs0x80;jitstressregs0x1000;jitstress2_jitstressregs1;jitstress2_jitstressregs2;jitstress2_jitstressregs3;jitstress2_jitstressregs4;jitstress2_jitstressregs8; jitstress2_jitstressregs0x10;jitstress2_jitstressregs0x80;jitstress2_jitstressregs0x1000'
       name: 'jitstress_scenarios'
       displayName: 'Jit Stress Scenarios'
+
+# GC Stress
+- template: eng/platform-matrix.yml
+  parameters:
+    jobTemplate: test-job.yml
+    buildConfig: checked
+    jobParameters:
+      priority: 0
+      scenarios: 'gcstress0x3;gcstress0xc;heapverify1;gcstress0xc_zapdisable;gcstress0xc_zapdisable_jitstress2;gcstress0xc_zapdisable_heapverify1;gcstress0xc_jitstress1;gcstress0xc_jitstress2;gcstress0xc_minopts_heapverify1'
+      name: 'gcstress_scenarios'
+      displayName: 'GC Stress Scenarios'
 
 # # Pri1 crossgen
 # - template: eng/platform-matrix.yml
