@@ -26,63 +26,93 @@ else:
 
 class ScenarioRegistry:
     def __init__(self):
-        self._runners = dict()
+        self._scenarios = dict()
 
-    def is_known_scenario_name(self, name):
-        return name in self._runners
+    def contains(self, name):
+        return name in self._scenarios
 
-    def get_scenario_runner(self, name):
-        return self._runners[name]
+    def registerScenario(self, name, scenario):
+        self._scenarios[name] = scenario
 
-    def register_scenario_runner(self, name, runner):
-        assert not self.is_known_scenario_name(name)
-        self._runners[name] = runner
+    def createRunner(self, name):
+        assert name in self._scenarios
+        scenario = self._scenarios[name]
+        return  ScenarioRunner(scenario)
 
-class ScenarioRunner:
-    def __init__(self, name, prototype=None):
+class Scenario:
+    def __init__(self, name):
         self._name = name
-        self._Core_Root = None
-        self._TestEnv = dict() if prototype is None else dict(prototype._TestEnv)
+        self._environ = dict()
 
-    def set_COMPlus(self, name, value):
-        self._TestEnv["COMPlus_" + name] = value
+    def prototype(self, prototype):
+        for name,value in prototype._environ.items():
+            self._environ[name] = value
         return self
 
-    def get_Core_Root(self):
-        assert not self._Core_Root is None
-        return self._Core_Root
+    def _setEnviron(self, name, value):
+        self._environ[name] = value
 
-    def set_Core_Root(self, dirpath):
-        assert os.path.isdir(dirpath)
-        self._Core_Root = dirpath
+    def setForceRelocs(self, forceRelocs):
+        self._setEnviron("COMPlus_ForceRelocs", forceRelocs)
+        return self
 
-    def _get_corerun(self):
-        return os.path.join(self.get_Core_Root(), "corerun" if platform_type == "unix" else "CoreRun.exe")
+    def setGCStress(self, gcStress):
+        self._setEnviron("COMPlus_GCStress", gcStress)
+        return self
 
-    def _get_console_runner(self):
-        return os.path.join(self.get_Core_Root(), "xunit.console.dll")
+    def setHeapVerify(self, heapVerify):
+        self._setEnviron("COMPlus_HeapVerify", "1")
+        return self
 
-    def _create_TestEnv(self, filepath):
-        lines = []
-        for name, value in self._TestEnv.items():
-            lines.append("{0} {1}={2}\n".format("set" if platform_type == "windows" else "export", name, value))
+    def setJITMinOpts(self, JITMinOpts):
+        self._setEnviron("COMPlus_JITMinOpts", JITMinOpts)
+        return self
 
-        with open(filepath, "w") as f:
-            f.writelines(lines)
+    def setJitStress(self, jitStress):
+        self._setEnviron("COMPlus_JitStress", jitStress)
+        return self
 
-    def _log(self, message):
-        print("[%s]: %s" % (sys.argv[0], message))
+    def setJitStressRegs(self, jitStressRegs):
+        self._setEnviron("COMPlus_JitStressRegs", jitStressRegs)
+        return self
+
+    def setReadyToRun(self, readyToRun):
+        self._setEnviron("COMPlus_ReadyToRun", readyToRun)
+        return self
+
+    def setTailcallStress(self, tailcallStress):
+        self._setEnviron("COMPlus_TailcallStress", tailcallStress)
+        return self
+
+    def setTieredCompilation(self, tieredCompilation):
+        self._setEnviron("COMPlus_TieredCompilation", tieredCompilation)
+        return self
+
+    def setZapDisable(self, zapDisable):
+        self._setEnviron("COMPlus_ZapDisable", zapDisable)
+        return self
 
     def register(self, registry):
-        registry.register_scenario_runner(self._name, self)
+        registry.registerScenario(self._name, self)
 
-    def run(self, test_wrapper_filepath):
-        assert os.path.isfile(test_wrapper_filepath)
+class ScenarioRunner:
+    def __init__(self, scenario):
+        self._scenario = scenario
 
-        args = [
-            self._get_corerun(),
-            self._get_console_runner(),
-            test_wrapper_filepath,
+    def setCoreRoot(self, coreRoot):
+        self._CoreRoot = coreRoot
+
+    def _getCoreRun(self):
+        return os.path.join(self._CoreRoot, "corerun" if platform_type == "unix" else "CoreRun.exe")
+
+    def _getTestRunner(self):
+        return os.path.join(self._CoreRoot, "xunit.console.dll")
+
+    def _buildArgs(self, testsWrapper):
+        return [
+            self._getCoreRun(),
+            self._getTestRunner(),
+            testsWrapper,
             "-nocolor",
             "-noshadow",
             "-xml", "testResults.xml",
@@ -90,16 +120,40 @@ class ScenarioRunner:
             "-notrait", "category=failing",
             "-parallel", "collections"]
 
+    def _buildSetEnvCommand(self, tup):
+        name, value = tup
+        if platform_type == "windows":
+            return "set {0}={1}".format(name, value)
+        else:
+            return "export {0}={1}".format(name, value)
+
+    def _createTestEnvFile(self, path):
+        lines = map(self._buildSetEnvCommand, self._scenario._environ.items())
+
+        self._log("Creating __TestEnv at {0} with contents:".format(path))
+        for line in lines:
+            self._log(" " + line)
+        with open(path, "w") as testEnvFile:
+            contents = "\n".join(lines)
+            testEnvFile.writelines(contents)
+
+    def _log(self, message):
+        print("[%s]: %s" % (sys.argv[0], message))
+
+    def run(self, testsWrapperPath):
+        assert os.path.isfile(testsWrapperPath)
+        
+        args = self._buildArgs(testsWrapperPath)
+
         environ = dict(os.environ)
-        environ["CORE_ROOT"] = self.get_Core_Root()
-        self._log("CORE_ROOT=%s" % self.get_Core_Root())
+        environ["CORE_ROOT"] = self._CoreRoot
 
-        env_script_filepath = os.path.join(os.getcwd(), "SetStressModes.bat")
-        environ["__TestEnv"] = env_script_filepath
+        self._log("CORE_ROOT=%s" % self._CoreRoot)
 
-        self._log("Creating __TestEnv at {0}".format(env_script_filepath))
-        self._create_TestEnv(env_script_filepath)
-
+        testEnvPath = os.path.join(os.path.dirname(testsWrapperPath), "SetStressModes.bat" if platform_type == "windows" else "SetStressModes.sh")
+        self._createTestEnvFile(testEnvPath)
+        environ["__TestEnv"] = testEnvPath
+        
         self._log("BEGIN EXECUTION")
         self._log(" ".join(args))
 
@@ -109,47 +163,208 @@ class ScenarioRunner:
         self._log("Finished running tests. Exit code = %d" % proc.returncode)
         return proc.returncode
 
-def build_registry():
+def buildScenarioRegistry():
     registry = ScenarioRegistry()
 
-    baseline = ScenarioRunner("baseline") \
-        .set_COMPlus("TieredCompilation", "0")
-
+    baseline = Scenario("baseline") \
+        .setTieredCompilation("0")
     baseline.register(registry)
 
     # Jit Stress Scenarios
 
-    ScenarioRunner("jitstress1", baseline) \
-        .set_COMPlus("JitStress", "1") \
+    Scenario("minopts") \
+        .prototype(baseline) \
+        .setJITMinOpts("1") \
         .register(registry)
 
-    ScenarioRunner("jitstress2", baseline) \
-        .set_COMPlus("JitStress", "2") \
+    Scenario("tieredcompilation") \
+        .setTieredCompilation("1") \
         .register(registry)
 
-    ScenarioRunner("jitstress1_tiered") \
-        .set_COMPlus("JitStress", "2") \
-        .set_COMPlus("TieredCompilation", "1") \
+    Scenario("forcerelocs") \
+        .setForceRelocs("1") \
         .register(registry)
 
-    ScenarioRunner("jitstress2_tiered") \
-        .set_COMPlus("JitStress", "2") \
-        .set_COMPlus("TieredCompilation", "1") \
+    Scenario("jitstress1") \
+        .prototype(baseline) \
+        .setJitStress("1") \
+        .register(registry)
+    
+    Scenario("jitstress2") \
+        .prototype(baseline) \
+        .setJitStress("2") \
+        .register(registry)
+
+    Scenario("jitstress1_tiered") \
+        .setJitStress("2") \
+        .setTieredCompilation("1") \
+        .register(registry)
+
+    Scenario("jitstress2_tiered") \
+        .setJitStress("2") \
+        .setTieredCompilation("1") \
+        .register(registry)
+
+    Scenario("jitstressregs1") \
+        .prototype(baseline) \
+        .setJitStressRegs("1") \
+        .register(registry)
+
+    Scenario("jitstressregs2") \
+        .prototype(baseline) \
+        .setJitStressRegs("2") \
+        .register(registry)
+
+    Scenario("jitstressregs3") \
+        .prototype(baseline) \
+        .setJitStressRegs("3") \
+        .register(registry)
+
+    Scenario("jitstressregs4") \
+        .prototype(baseline) \
+        .setJitStressRegs("4") \
+        .register(registry)
+
+    Scenario("jitstressregs8") \
+        .prototype(baseline) \
+        .setJitStressRegs("8") \
+        .register(registry)
+
+    Scenario("jitstressregs0x10") \
+        .prototype(baseline) \
+        .setJitStressRegs("0x10") \
+        .register(registry)
+
+    Scenario("jitstressregs0x80") \
+        .prototype(baseline) \
+        .setJitStressRegs("0x80") \
+        .register(registry)
+
+    Scenario("jitstressregs0x1000") \
+        .prototype(baseline) \
+        .setJitStressRegs("0x1000") \
+        .register(registry)
+
+    Scenario("jitstress2_jitstressregs1") \
+        .prototype(baseline) \
+        .setJitStress("2") \
+        .setJitStressRegs("1") \
+        .register(registry)
+
+    Scenario("jitstress2_jitstressregs2") \
+        .prototype(baseline) \
+        .setJitStress("2") \
+        .setJitStressRegs("2") \
+        .register(registry)
+
+    Scenario("jitstress2_jitstressregs3") \
+        .prototype(baseline) \
+        .setJitStress("2") \
+        .setJitStressRegs("3") \
+        .register(registry)
+
+    Scenario("jitstress2_jitstressregs4") \
+        .prototype(baseline) \
+        .setJitStress("2") \
+        .setJitStressRegs("4") \
+        .register(registry)
+
+    Scenario("jitstress2_jitstressregs8") \
+        .prototype(baseline) \
+        .setJitStress("2") \
+        .setJitStressRegs("8") \
+        .register(registry)
+
+    Scenario("jitstress2_jitstressregs0x10") \
+        .prototype(baseline) \
+        .setJitStress("2") \
+        .setJitStressRegs("0x10") \
+        .register(registry)
+
+    Scenario("jitstress2_jitstressregs0x80") \
+        .prototype(baseline) \
+        .setJitStress("2") \
+        .setJitStressRegs("0x80") \
+        .register(registry)
+
+    Scenario("jitstress2_jitstressregs0x1000") \
+        .prototype(baseline) \
+        .setJitStress("2") \
+        .setJitStressRegs("0x1000") \
+        .register(registry)
+
+    Scenario("tailcallstress") \
+        .prototype(baseline) \
+        .setTailcallStress("1") \
         .register(registry)
 
     # GC Stress Scenarios
 
-    ScenarioRunner("gcstress0x3", baseline) \
-        .set_COMPlus("COMPlus_GCStress", "0x3") \
+    Scenario("gcstress0x3") \
+        .prototype(baseline) \
+        .setGCStress("0x3") \
         .register(registry)
 
-    ScenarioRunner("gcstress0xc", baseline) \
-        .set_COMPlus("COMPlus_GCStress", "0xc") \
+    Scenario("gcstress0xc") \
+        .prototype(baseline) \
+        .setGCStress("0xc") \
+        .register(registry)
+
+    Scenario("zapdisable") \
+        .prototype(baseline) \
+        .setZapDisable("1") \
+        .setReadyToRun("0") \
+        .register(registry)
+
+    Scenario("heapverify1") \
+        .prototype(baseline) \
+        .setHeapVerify("1") \
+        .register(registry)
+
+    Scenario("gcstress0xc_zapdisable") \
+        .prototype(baseline) \
+        .setGCStress("0xc") \
+        .setZapDisable("1") \
+        .register(registry)
+
+    Scenario("gcstress0xc_zapdisable_jitstress2") \
+        .prototype(baseline) \
+        .setGCStress("0xc") \
+        .setZapDisable("1") \
+        .setJitStress("2") \
+        .register(registry)
+
+    Scenario("gcstress0xc_zapdisable_heapverify1") \
+        .prototype(baseline) \
+        .setGCStress("0xc") \
+        .setZapDisable("1") \
+        .setHeapVerify("1") \
+        .register(registry)
+
+    Scenario("gcstress0xc_jitstress1") \
+        .prototype(baseline) \
+        .setGCStress("0xc") \
+        .setJitStress("1") \
+        .register(registry)
+
+    Scenario("gcstress0xc_jitstress2") \
+        .prototype(baseline) \
+        .setGCStress("0xc") \
+        .setJitStress("2") \
+        .register(registry)
+
+    Scenario("gcstress0xc_minopts_heapverify1") \
+        .prototype(baseline) \
+        .setGCStress("0xc") \
+        .setJITMinOpts("1") \
+        .setHeapVerify("1") \
         .register(registry)
 
     return registry
 
 if __name__ == "__main__":
+    registry = buildScenarioRegistry()
+
     parser = argparse.ArgumentParser(description="Parse arguments")
     parser.add_argument("-scenario", dest="scenario", default="baseline")
     parser.add_argument("-wrapper", dest="wrapper", required=True)
@@ -158,9 +373,7 @@ if __name__ == "__main__":
 
     scenario = args.scenario
 
-    registry = build_registry()
-
-    if not registry.is_known_scenario_name(scenario):
+    if not registry.contains(scenario):
         print("Scenario \"%s\" is unknown" % scenario)
         sys.exit(1)
 
@@ -172,10 +385,10 @@ if __name__ == "__main__":
         print("HELIX_WORKITEM_PAYLOAD must be defined in environment")
         sys.exit(1)
 
-    test_wrapper_filepath = os.path.join(os.environ["HELIX_WORKITEM_PAYLOAD"], args.wrapper)
+    testsWrapperPath = os.path.join(os.environ["HELIX_WORKITEM_PAYLOAD"], args.wrapper)
 
-    runner = registry.get_scenario_runner(scenario)
-    runner.set_Core_Root(os.environ["HELIX_CORRELATION_PAYLOAD"])
+    runner = registry.createRunner(scenario)
+    runner.setCoreRoot(os.environ["HELIX_CORRELATION_PAYLOAD"])
+    returncode = runner.run(testsWrapperPath)
 
-    returncode = runner.run(test_wrapper_filepath)
     sys.exit(returncode)
