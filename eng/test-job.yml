@@ -85,7 +85,7 @@ jobs:
 
     # Send tests to helix
     - ${{ if or(eq(parameters.osGroup, 'Linux'), eq(parameters.osGroup, 'OSX')) }}:
-      - script: ./Tools/dotnetcli/dotnet msbuild tests/helixpublishwitharcade.proj /t:Test $(scenariosArg)
+      - script: ./Tools/dotnetcli/dotnet msbuild tests/helixpublishwitharcade.proj /t:SubmitTestsToHelix $(scenariosArg)
         displayName: Send test jobs to Helix
         env:
           ${{ if eq(variables['System.TeamProject'], 'internal') }}:
@@ -95,7 +95,7 @@ jobs:
             # Access token variable for public project
             HelixAccessToken: $(BotAccount-dotnet-github-anon-kaonashi-bot-helix-token)
     - ${{ if eq(parameters.osGroup, 'Windows_NT') }}:
-      - script: .\Tools\dotnetcli\dotnet msbuild tests\helixpublishwitharcade.proj /t:Test $(scenariosArg)
+      - script: .\Tools\dotnetcli\dotnet msbuild tests\helixpublishwitharcade.proj /t:SubmitTestsToHelix $(scenariosArg)
         displayName: Send test jobs to Helix
         env:
           ${{ if eq(variables['System.TeamProject'], 'internal') }}:

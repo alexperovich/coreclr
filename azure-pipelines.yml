@@ -106,7 +106,6 @@ jobs:
 #     buildConfig: checked
 #     jobParameters:
 #       priority: 1
-#       scenarios: 'normal;jitstress2'
 
 # Jit Stress
 - template: eng/platform-matrix.yml
