@@ -80,6 +80,10 @@ class Scenario:
         self._setEnviron("COMPlus_ReadyToRun", readyToRun)
         return self
 
+    def setRunCrossGen(self, runCrossGen):
+        self._setEnviron("RunCrossGen", runCrossGen)
+        return self
+
     def setTailcallStress(self, tailcallStress):
         self._setEnviron("COMPlus_TailcallStress", tailcallStress)
         return self
@@ -163,14 +167,10 @@ class ScenarioRunner:
         self._log("Finished running tests. Exit code = %d" % proc.returncode)
         return proc.returncode
 
-def buildScenarioRegistry():
-    registry = ScenarioRegistry()
-
-    baseline = Scenario("baseline") \
+def buildJitStressScenarios(registry):
+    baseline = Scenario("no_tiered_compilation") \
         .setTieredCompilation("0")
     baseline.register(registry)
-
-    # Jit Stress Scenarios
 
     Scenario("minopts") \
         .prototype(baseline) \
@@ -298,7 +298,9 @@ def buildScenarioRegistry():
         .setTailcallStress("1") \
         .register(registry)
 
-    # GC Stress Scenarios
+def buildGcStressScenarios(registry):
+    baseline = Scenario("baseline") \
+        .setTieredCompilation("0")
 
     Scenario("gcstress0x3") \
         .prototype(baseline) \
@@ -359,6 +361,98 @@ def buildScenarioRegistry():
         .setJITMinOpts("1") \
         .setHeapVerify("1") \
         .register(registry)
+
+def buildReadyToRunStressScenarios(registry):
+    baseline = Scenario("r2r_no_tiered_compilation") \
+        .setTieredCompilation("0") \
+        .setReadyToRun("1")
+    baseline.register(registry)
+
+    Scenario("r2r_jitstress1") \
+        .prototype(baseline) \
+        .setJitStress("1") \
+        .register(registry)
+
+    Scenario("r2r_jitstress2") \
+        .prototype(baseline) \
+        .setJitStress("2") \
+        .register(registry)
+
+    Scenario("r2r_jitstress1_tiered") \
+        .setReadyToRun("1") \
+        .setJitStress("1") \
+        .setTieredCompilation("1") \
+        .register(registry)
+
+    Scenario("r2r_jitstress2_tiered") \
+        .setReadyToRun("1") \
+        .setJitStress("2") \
+        .setTieredCompilation("1") \
+        .register(registry)
+
+    Scenario("r2r_jitstressregs1") \
+        .prototype(baseline) \
+        .setJitStressRegs("1") \
+        .register(registry)
+
+    Scenario("r2r_jitstressregs2") \
+        .prototype(baseline) \
+        .setJitStressRegs("2") \
+        .register(registry)
+
+    Scenario("r2r_jitstressregs3") \
+        .prototype(baseline) \
+        .setJitStressRegs("3") \
+        .register(registry)
+
+    Scenario("r2r_jitstressregs4") \
+        .prototype(baseline) \
+        .setJitStressRegs("4") \
+        .register(registry)
+
+    Scenario("r2r_jitstressregs8") \
+        .prototype(baseline) \
+        .setJitStressRegs("8") \
+        .register(registry)
+
+    Scenario("r2r_jitstressregs0x10") \
+        .prototype(baseline) \
+        .setJitStressRegs("0x10") \
+        .register(registry)
+
+    Scenario("r2r_jitstressregs0x80") \
+        .prototype(baseline) \
+        .setJitStressRegs("0x80") \
+        .register(registry)
+
+    Scenario("r2r_jitstressregs0x1000") \
+        .prototype(baseline) \
+        .setJitStressRegs("0x1000") \
+        .register(registry)
+
+    Scenario("r2r_jitminopts") \
+        .prototype(baseline) \
+        .setJITMinOpts("1") \
+        .register(registry)
+
+    Scenario("r2r_jitforcerelocs") \
+        .prototype(baseline) \
+        .setForceRelocs("1") \
+        .register(registry)
+
+    Scenario("r2r_gcstress15") \
+        .prototype(baseline) \
+        .setGCStress("0xF") \
+        .register(registry)
+
+    return registry
+
+def buildScenarioRegistry():
+    registry = ScenarioRegistry()
+
+    buildJitStressScenarios(registry)
+    buildGcStressScenarios(registry)
+    buildReadyToRunStressScenarios(registry)
 
     return registry
 
