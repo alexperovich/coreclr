@@ -11,15 +11,12 @@
     <HelixSource>pr/coreclr/master</HelixSource>
     <HelixType>test/stuff</HelixType>
     <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
+    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
 
     <!-- TODO: add target queues for rhel and linux-musl -->
     <!-- TODO: why don't we currently run tests on windows x86? -->
     <HelixTargetQueues Condition=" '$(BuildOS)' == 'Windows_NT' ">
-      Windows.10.Amd64;
-      Windows.10.Nano.Amd64;
-      Windows.10.Amd64.Core;
-      Windows.7.Amd64;
-      Windows.81.Amd64
+      Windows.10.Amd64.Core
     </HelixTargetQueues>
     <HelixTargetQueues Condition=" '$(BuildOS)' == 'Linux' ">
       debian.82.amd64;
@@ -37,7 +34,6 @@
       osx.1013.amd64
     </HelixTargetQueues>
 
-    <EnableXUnitReporter>true</EnableXUnitReporter>
     <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
     <SourceDirectory>$(MSBuildProjectDirectory)/..</SourceDirectory>
   </PropertyGroup>
