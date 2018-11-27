@@ -11,12 +11,21 @@
     <HelixSource>pr/coreclr/master</HelixSource>
     <HelixType>test/stuff</HelixType>
     <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
-    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+    <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
 
     <!-- TODO: add target queues for rhel and linux-musl -->
     <!-- TODO: why don't we currently run tests on windows x86? -->
+    <!--
     <HelixTargetQueues Condition=" '$(BuildOS)' == 'Windows_NT' ">
-      Windows.10.Amd64.Core
+      Windows.10.Amd64;
+      Windows.10.Nano.Amd64;
+      Windows.10.Amd64.Core;
+      Windows.7.Amd64;
+      Windows.81.Amd64
+    </HelixTargetQueues>
+    -->
+    <HelixTargetQueues Condition=" '$(BuildOS)' == 'Windows_NT' ">
+      Windows.10.Amd64;
     </HelixTargetQueues>
     <HelixTargetQueues Condition=" '$(BuildOS)' == 'Linux' ">
       debian.82.amd64;
@@ -75,11 +84,15 @@
       <ScenarioPrefix Condition=" '$(Scenario)' != '' ">$(Scenario) </ScenarioPrefix>
     </PropertyGroup>
     <ItemGroup>
-      <TestZipFiles Include="$(SourceDirectory)\bin\tests\*\archive\tests\*.zip" />
+      <!-- 
+      <TestZipFiles Include="$(SourceDirectory)\bin\tests\*\archive\tests\*.zip" /> 
       <HelixWorkItem Include="@(TestZipFiles->'$(ScenarioPrefix)%(FileName)')" >
-        <PayloadArchive>%(Identity)</PayloadArchive>
-        <Command Condition=" '$(Scenario)' == '' ">python runtest_helix.py -wrapper %(FileName).dll</Command>
-        <Command Condition=" '$(Scenario)' != '' ">python runtest_helix.py -scenario $(Scenario) -wrapper %(FileName).dll</Command>
+      -->
+      <HelixWorkItem Include="TestItem1;TestItem2;TestItem3" >
+        <!-- <PayloadArchive>%(Identity)</PayloadArchive> -->
+        <Command>echo $(Scenario)</Command>
+        <!-- <Command Condition=" '$(Scenario)' == '' ">python runtest_helix.py -wrapper %(FileName).dll</Command>
+        <Command Condition=" '$(Scenario)' != '' ">python runtest_helix.py -scenario $(Scenario) -wrapper %(FileName).dll</Command> -->
       </HelixWorkItem>
     </ItemGroup>
 
