@@ -34,7 +34,6 @@
       osx.1013.amd64
     </HelixTargetQueues>
 
-    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
     <SourceDirectory>$(MSBuildProjectDirectory)/..</SourceDirectory>
   </PropertyGroup>
 
